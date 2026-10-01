@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task 1 - Quiz Game | Cognifyz Internship</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --correct: #22c55e;
+            --wrong: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-option.correct {
+            background: var(--correct) !important;
+            border-color: var(--correct);
+            color: #fff;
+        }
+
+        .btn-option.wrong {
+            background: var(--wrong) !important;
+            border-color: var(--wrong);
+            color: #fff;
+        }
+
+        .result-box {
+            text-align: center;
+            display: none;
+        }
+
+        .score-text {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 15px 0;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-restart:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        <span class="badge">Cognifyz Task 1</span>
+        <h1 class="title">Tech Knowledge Quiz</h1>
+    </div>
+
+    <div id="quiz-screen">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="question-box" id="question">Question goes here...</div>
+        <div class="options-grid" id="options"></div>
+    </div>
+
+    <div class="result-box" id="result-screen">
+        <h2>Quiz Completed! 🎉</h2>
+        <div class="score-text" id="score">0 / 0</div>
+        <p id="result-message" style="color: var(--text-sub);"></p>
+        <button class="btn-restart" onclick="restartQuiz()">Try Again</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "Which programming language is known as the language of the web?",
+            options: ["Python", "JavaScript", "C++", "Java"],
+            answer: 1
+        },
+        {
+            question: "What does CSS stand for?",
+            options: [
+                "Creative Style Sheets",
+                "Cascading Style Sheets",
+                "Computer Style Syntax",
+                "Control Style Sheets"
+            ],
+            answer: 1
+        },
+        {
+            question: "Which data structure operates on a First In First Out (FIFO) basis?",
+            options: ["Stack", "Queue", "Tree", "Graph"],
+            answer: 1
+        },
+        {
+            question: "Which code editor is commonly used for mobile web development?",
+            options: ["Spck Code Editor", "Eclipse", "PyCharm", "Xcode"],
+            answer: 0
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const progressEl = document.getElementById('progress');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const scoreEl = document.getElementById('score');
+    const resultMessage = document.getElementById('result-message');
+
+    function loadQuestion() {
+        const currentQ = questions[currentQuestionIndex];
+        questionEl.textContent = `${currentQuestionIndex + 1}. ${currentQ.question}`;
+        optionsEl.innerHTML = '';
+
+        // Update progress bar
+        const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+        progressEl.style.width = `${progressPercent}%`;
+
+        currentQ.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.classList.add('btn-option');
+            button.textContent = option;
+            button.onclick = () => selectOption(index, currentQ.answer, button);
+            optionsEl.appendChild(button);
+        });
+    }
+
+    function selectOption(selectedIndex, correctIndex, selectedBtn) {
+        const allButtons = optionsEl.children;
+        for (let btn of allButtons) {
+            btn.disabled = true;
+        }
+
+        if (selectedIndex === correctIndex) {
+            selectedBtn.classList.add('correct');
+            score++;
+        } else {
+            selectedBtn.classList.add('wrong');
+            allButtons[correctIndex].classList.add('correct');
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }, 1200);
+    }
+
+    function showResults() {
+        quizScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        scoreEl.textContent = `${score} / ${questions.length}`;
+
+        if (score === questions.length) {
+            resultMessage.textContent = "Outstanding! Perfect Score!";
+        } else if (score >= questions.length / 2) {
+            resultMessage.textContent = "Good job! Keep practicing.";
+        } else {
+            resultMessage.textContent = "Don't give up! Try again.";
+        }
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        resultScreen.style.display = 'none';
+        quizScreen.style.display = 'block';
+        loadQuestion();
+    }
+
+    // Initialize Quiz
+    loadQuestion();
+</script>
+
+</body>
+</html>
